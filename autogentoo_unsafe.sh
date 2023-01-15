@@ -19,6 +19,24 @@ echo ""
 echo "!!THIS ONLY WORKS ON UEFI MACHINES!!"
 echo ""
 
+echo "Toolcheck..."
+#check if sgdisk is installed
+sgdisk --version > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "sgdisk is not installed, aborting..."
+    exit 1
+else
+    echo "sgdisk is installed."
+fi
+#check if wget is installed
+wget --version > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "wget is not installed, aborting..."
+    exit 1
+else
+    echo "wget is installed."
+fi
+
 lsblk
 echo ""
 echo "Please enter the full path of the drive you want to install gentoo on."
@@ -57,5 +75,11 @@ mkfs.fat -F32 ${drive}1
 mkswap ${drive}2
 swapon ${drive}2
 mkfs.ext4 ${drive}3
+mkdir /mnt/gentoo
+mount ${drive}3 /mnt/gentoo
+mkdir -p /mnt/gentoo/boot/efi
+mount ${drive}1 /mnt/gentoo/boot/efi
 
-echo "Drive setup complete."
+#download stage3
+STAGE3_URL="https://bouncer.gentoo.org/fetch/root/all/releases/amd64/autobuilds/20230108T161708Z/stage3-amd64-openrc-20230108T161708Z.tar.xz"
+wget -O /mnt/gentoo/stage3.tar.xz $STAGE3_URL
