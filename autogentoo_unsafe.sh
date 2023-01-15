@@ -91,3 +91,17 @@ echo "Downloading stage3..."
 #download stage3
 STAGE3_URL="https://bouncer.gentoo.org/fetch/root/all/releases/amd64/autobuilds/20230108T161708Z/stage3-amd64-openrc-20230108T161708Z.tar.xz"
 wget -O /mnt/gentoo/stage3.tar.xz $STAGE3_URL
+cd /mnt/gentoo
+tar xpvf stage3.tar.xz --xattrs-include='*.*' --numeric-owner
+echo "Stage3 downloaded."
+#time to configure make.conf
+echo "Configuring make.conf..."
+echo "CFLAGS=\"-march=native -O2 -pipe\"" >> /mnt/gentoo/etc/portage/make.conf
+echo "CXXFLAGS=\"\${CFLAGS}\"" >> /mnt/gentoo/etc/portage/make.conf
+echo "MAKEOPTS=\"-j$(nproc)\"" >> /mnt/gentoo/etc/portage/make.conf
+#find the fastest mirror
+echo "Finding fastest mirror..."
+MIRROR=$(wget -qO- https://www.gentoo.org/downloads/mirrors/ | grep -oP 'https://.*?/gentoo-distfiles' | head -n 1)
+echo "Fastest mirror is $MIRROR"
+echo "GENTOO_MIRRORS=\"$MIRROR\"" >> /mnt/gentoo/etc/portage/make.conf
+echo "Configured make.conf."
