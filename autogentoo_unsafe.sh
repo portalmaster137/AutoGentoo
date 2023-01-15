@@ -175,12 +175,44 @@ echo "Adding the hosts..."
 echo "localhost" > /etc/hosts
 echo "127.0.0.1 $hostname" >> /etc/hosts
 echo "::1 $hostname" >> /etc/hosts
-#set the root password
-echo "Setting the root password..."
-echo "Please enter the root password you want to use."
-echo ""
-passwd
-echo "Root password set."
+echo "Hosts added."
+#install the portage tree
+echo "Installing the portage tree..."
+emerge-webrsync
+echo "Portage tree installed."
+#install the kernel
+echo "Installing the kernel..."
+emerge sys-kernel/gentoo-sources
+emerge sys-kernel/linux-firmware
+echo "Kernel installed."
+#install the bootloader
+echo "Installing the bootloader..."
+emerge sys-boot/grub:2
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub
+grub-mkconfig -o /boot/grub/grub.cfg
+echo "Bootloader installed."
+#install sudo
+echo "Installing sudo..."
+emerge app-admin/sudo
+echo "Sudo installed."
+#add the user named gentoo
+echo "Adding the user gentoo..."
+useradd -m -G users,wheel,audio,video,cdrom,usb,plugdev -s /bin/bash gentoo
+echo "User gentoo added."
+#set the password for the user gentoo as "Pas5w0rd!"
+echo "Setting the password for the user gentoo..."
+echo "gentoo:Pas5w0rd!" | chpasswd
+echo "Password set."
+#add the user gentoo to sudoers
+echo "Adding the user gentoo to sudoers..."
+echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
+echo "User gentoo added to sudoers."
+#install the networkmanager
+echo "Installing the networkmanager..."
+emerge net-misc/networkmanager
+rc-update add NetworkManager default
+echo "Networkmanager installed."
+
 
 #end chroot
 EOF
