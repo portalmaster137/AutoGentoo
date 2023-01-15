@@ -66,27 +66,12 @@ fi
 #rest of the drive ext4
 #make the partitions
 echo "Creating partitions..."
-fdisk $drive <<EOF
-n
-1
-
-+100M
-n
-2
-
-+4G
-n
-3
-
-
-t
-1
-1
-t
-2
-19
-w
-EOF
+#first, remove the partition table
+sgdisk -Z $drive
+#make the partitions
+sgdisk -n 1:0:+100M -t 1:ef00 -c 1:"EFI" $drive
+sgdisk -n 2:0:+4G -t 2:8200 -c 2:"SWAP" $drive
+sgdisk -n 3:0:0 -t 3:8300 -c 3:"ROOT" $drive
 echo "Partitions created."
 #make the filesystems
 echo "Making filesystems..."
