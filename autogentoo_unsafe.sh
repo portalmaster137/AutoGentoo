@@ -120,7 +120,9 @@ echo "Mounted necessary filesystems."
 #chroot
 echo "Chrooting..."
 cp /etc/resolv.conf /mnt/gentoo/etc/
-chroot /mnt/gentoo /bin/bash
+#we need to chroot without ending the script
+#so we use exec
+exec chroot /mnt/gentoo /bin/bash <<'EOF'
 source /etc/profile
 export PS1="(chroot) $PS1"
 echo "Chrooted."
@@ -153,3 +155,27 @@ echo ""
 echo "Setting locale to $locale..."
 eselect locale set $locale
 echo "Locale set."
+#set the hostname
+echo "Setting the hostname..."
+echo "Please enter the hostname you want to use."
+echo "Example: gentoo"
+echo ""
+read -p "Hostname: " hostname
+echo ""
+echo "Setting hostname to $hostname..."
+echo "$hostname" > /etc/hostname
+echo "Hostname set."
+#add the hosts
+echo "Adding the hosts..."
+echo "localhost" > /etc/hosts
+echo "127.0.0.1 $hostname" >> /etc/hosts
+echo "::1 $hostname" >> /etc/hosts
+#set the root password
+echo "Setting the root password..."
+echo "Please enter the root password you want to use."
+echo ""
+passwd
+echo "Root password set."
+
+#end chroot
+EOF
