@@ -42,3 +42,5 @@ if [ $SAFE -eq 0 ]; then
 else
     echo "Skipping partition table removal from SAFE..."
 fi
+#make a gpt partition table
+sgdisk -og $drive
