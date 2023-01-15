@@ -60,26 +60,49 @@ if [ $SAFE -eq 0 ]; then
 else
     echo "Skipping partition table removal from SAFE..."
 fi
-#make a gpt partition table
-sgdisk -og $drive
-#make a 100mb FAT32 partition
-sgdisk -n 1:0:+100M -t 1:ef00 -c 1:"EFI System Partition" $drive
-#make a 4gb SWAP partition
-sgdisk -n 2:0:+4G -t 2:8200 -c 2:"Linux Swap" $drive
-#everything else is ext4
-sgdisk -n 3:0:0 -t 3:8300 -c 3:"Linux Filesystem" $drive
+#well be using fdisk to create the partitions
+#should be 100MB FAT32 EFI,
+#4GB swap,
+#rest of the drive ext4
 #make the partitions
-partprobe $drive
-#format the partitions
+echo "Creating partitions..."
+fdisk $drive <<EOF
+n
+1
+
++100M
+n
+2
+
++4G
+n
+3
+
+
+t
+1
+1
+t
+2
+19
+w
+EOF
+echo "Partitions created."
+#make the filesystems
+echo "Making filesystems..."
 mkfs.fat -F32 ${drive}1
 mkswap ${drive}2
 swapon ${drive}2
 mkfs.ext4 ${drive}3
+echo "Filesystems made."
+#mount the filesystems
+echo "Mounting filesystems..."
 mkdir /mnt/gentoo
 mount ${drive}3 /mnt/gentoo
 mkdir -p /mnt/gentoo/boot/efi
 mount ${drive}1 /mnt/gentoo/boot/efi
-
+echo "Filesystems mounted."
+echo "Downloading stage3..."
 #download stage3
 STAGE3_URL="https://bouncer.gentoo.org/fetch/root/all/releases/amd64/autobuilds/20230108T161708Z/stage3-amd64-openrc-20230108T161708Z.tar.xz"
 wget -O /mnt/gentoo/stage3.tar.xz $STAGE3_URL
