@@ -90,7 +90,12 @@ echo "Filesystems mounted."
 echo "Downloading stage3..."
 #download stage3
 STAGE3_URL="https://bouncer.gentoo.org/fetch/root/all/releases/amd64/autobuilds/20230108T161708Z/stage3-amd64-openrc-20230108T161708Z.tar.xz"
-wget -O /mnt/gentoo/stage3.tar.xz $STAGE3_URL
+#check if stage3 is already downloaded
+if [ -f /mnt/gentoo/stage3.tar.xz ]; then
+    echo "Stage3 already downloaded, skipping..."
+else
+    wget -O /mnt/gentoo/stage3.tar.xz $STAGE3_URL
+fi
 cd /mnt/gentoo
 tar xpvf stage3.tar.xz --xattrs-include='*.*' --numeric-owner
 echo "Stage3 downloaded."
