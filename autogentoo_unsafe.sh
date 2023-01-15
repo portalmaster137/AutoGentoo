@@ -105,3 +105,51 @@ MIRROR=$(wget -qO- https://www.gentoo.org/downloads/mirrors/ | grep -oP 'https:/
 echo "Fastest mirror is $MIRROR"
 echo "GENTOO_MIRRORS=\"$MIRROR\"" >> /mnt/gentoo/etc/portage/make.conf
 echo "Configured make.conf."
+#copy dns
+echo "Copying DNS..."
+cp /etc/resolv.conf /mnt/gentoo/etc/
+echo "Copied DNS."
+#mount the necessary filesystems
+echo "Mounting necessary filesystems..."
+mount --types proc /proc /mnt/gentoo/proc
+mount --rbind /sys /mnt/gentoo/sys
+mount --make-rslave /mnt/gentoo/sys
+mount --rbind /dev /mnt/gentoo/dev
+mount --make-rslave /mnt/gentoo/dev
+echo "Mounted necessary filesystems."
+#chroot
+echo "Chrooting..."
+cp /etc/resolv.conf /mnt/gentoo/etc/
+chroot /mnt/gentoo /bin/bash
+source /etc/profile
+export PS1="(chroot) $PS1"
+echo "Chrooted."
+#set the timezone
+echo "Setting the timezone..."
+#find the timezone
+echo "Please enter your timezone."
+echo "Example: America/New_York"
+echo ""
+read -p "Timezone: " timezone
+echo ""
+echo "Setting timezone to $timezone..."
+ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
+echo "Timezone set."
+#set the clock
+echo "Setting the clock..."
+echo "UTC" > /etc/timezone
+emerge --config sys-libs/timezone-data
+echo "Clock set."
+#set the locale
+echo "Setting the locale..."
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen
+eselect locale list
+echo "Please enter the number of the locale you want to use."
+echo "Example: 3"
+echo ""
+read -p "Locale: " locale
+echo ""
+echo "Setting locale to $locale..."
+eselect locale set $locale
+echo "Locale set."
