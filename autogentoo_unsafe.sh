@@ -44,3 +44,18 @@ else
 fi
 #make a gpt partition table
 sgdisk -og $drive
+#make a 100mb FAT32 partition
+sgdisk -n 1:0:+100M -t 1:ef00 -c 1:"EFI System Partition" $drive
+#make a 4gb SWAP partition
+sgdisk -n 2:0:+4G -t 2:8200 -c 2:"Linux Swap" $drive
+#everything else is ext4
+sgdisk -n 3:0:0 -t 3:8300 -c 3:"Linux Filesystem" $drive
+#make the partitions
+partprobe $drive
+#format the partitions
+mkfs.fat -F32 ${drive}1
+mkswap ${drive}2
+swapon ${drive}2
+mkfs.ext4 ${drive}3
+
+echo "Drive setup complete."
